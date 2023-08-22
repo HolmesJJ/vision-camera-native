@@ -1,0 +1,57 @@
+name: React Native CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+        python: [ '3.x' ]
+        node: [ '16' ]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Set up repository
+        uses: actions/checkout@v2
+        
+      - name: Set up python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Clean barrel
+        run: python tools/barrel.py --clean
+
+      - name: Run barrel
+        run: python tools/barrel.py
+
+      - name: Set up node modules
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install
+
+      - name: Run eslint
+        run: npm run lint
+
+      - name: Run typescript compiler
+        run: npm run tsc
+
+      - name: Run jest
+        run: npx jest --clearCache
+
+      - name: Generate coverage report
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        if: runner.os == 'Linux'
+        with:
+          annotations: none
+
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v2
+        if: runner.os == 'Linux'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          target: 1%
+          threshold: 1%

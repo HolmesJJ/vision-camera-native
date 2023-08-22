@@ -1,3 +1,9 @@
+/**
+ * .eslintrc.js
+ * @author HU JIAJUN <e0556371@u.nus.edu>
+ * @file ESLint configuration stript
+ */
+
 module.exports = {
   root: true,
   extends: '@react-native-community',
@@ -9,8 +15,16 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-shadow': ['error'],
         'no-shadow': 'off',
-        'no-undef': 'off',
+        'eslint-comments/no-unused-disable': 'off',
       },
     },
   ],
+  rules: {
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto',
+      },
+    ],
+  },
 };

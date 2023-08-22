@@ -1,8 +1,8 @@
 /**
+ * metro.config.js
+ * @author HU JIAJUN <e0556371@u.nus.edu>
  * Metro configuration for React Native
  * https://github.com/facebook/react-native
- *
- * @format
  */
 
 module.exports = {
@@ -10,8 +10,11 @@ module.exports = {
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: false,
-        inlineRequires: true,
+        inlineRequires: false,
       },
     }),
+  },
+  resolver: {
+    extraNodeModules: require('node-libs-react-native'),
   },
 };
