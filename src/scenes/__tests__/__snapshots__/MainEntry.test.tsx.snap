@@ -1,0 +1,381 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`snapshot 1`] = `
+<RNCSafeAreaView
+  edges={
+    Object {
+      "bottom": "additive",
+      "left": "additive",
+      "right": "additive",
+      "top": "additive",
+    }
+  }
+  style={
+    Object {
+      "flex": 1,
+    }
+  }
+>
+  <View
+    style={
+      Object {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "column",
+        "justifyContent": "center",
+      }
+    }
+  >
+    <View>
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "justifyContent": "center",
+            "marginBottom": 50,
+            "marginLeft": 20,
+            "marginRight": 20,
+          }
+        }
+      >
+        <Text
+          style={
+            Array [
+              Object {
+                "textAlign": "left",
+              },
+              Object {
+                "color": "rgba(28, 27, 31, 1)",
+                "fontFamily": "System",
+                "fontWeight": "400",
+                "letterSpacing": 0,
+              },
+              Object {
+                "writingDirection": "ltr",
+              },
+              Object {
+                "fontSize": 18,
+                "marginBottom": 10,
+                "textAlign": "center",
+              },
+            ]
+          }
+        >
+          Vision Camera needs camera permission
+        </Text>
+        <View
+          collapsable={false}
+          style={
+            Object {
+              "backgroundColor": "rgba(103, 80, 164, 1)",
+              "borderRadius": 20,
+              "shadowColor": "#000",
+              "shadowOffset": Object {
+                "height": 0,
+                "width": 0,
+              },
+              "shadowOpacity": 0,
+              "shadowRadius": 0,
+              "width": 100,
+            }
+          }
+          testID="cameraButton-container-outer-layer"
+        >
+          <View
+            collapsable={false}
+            style={
+              Object {
+                "backgroundColor": "rgba(103, 80, 164, 1)",
+                "borderColor": "transparent",
+                "borderRadius": 20,
+                "borderStyle": "solid",
+                "borderWidth": 0,
+                "flex": undefined,
+                "minWidth": 64,
+                "shadowColor": "#000",
+                "shadowOffset": Object {
+                  "height": 0,
+                  "width": 0,
+                },
+                "shadowOpacity": 0,
+                "shadowRadius": 0,
+              }
+            }
+            testID="cameraButton-container"
+          >
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                Array [
+                  Object {
+                    "overflow": "hidden",
+                  },
+                  Object {
+                    "borderRadius": 20,
+                  },
+                ]
+              }
+              testID="cameraButton"
+            >
+              <View
+                style={
+                  Array [
+                    Object {
+                      "alignItems": "center",
+                      "flexDirection": "row",
+                      "justifyContent": "center",
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                <Text
+                  numberOfLines={1}
+                  selectable={false}
+                  style={
+                    Array [
+                      Object {
+                        "textAlign": "left",
+                      },
+                      Object {
+                        "color": "rgba(28, 27, 31, 1)",
+                        "writingDirection": "ltr",
+                      },
+                      Array [
+                        Object {
+                          "fontFamily": "System",
+                          "fontSize": 14,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.1,
+                          "lineHeight": 20,
+                        },
+                        Array [
+                          Object {
+                            "marginHorizontal": 16,
+                            "marginVertical": 9,
+                            "textAlign": "center",
+                          },
+                          false,
+                          Object {
+                            "marginHorizontal": 24,
+                            "marginVertical": 10,
+                          },
+                          undefined,
+                          false,
+                          Object {
+                            "color": "rgba(255, 255, 255, 1)",
+                            "fontFamily": "System",
+                            "fontSize": 14,
+                            "fontWeight": "500",
+                            "letterSpacing": 0.1,
+                            "lineHeight": 20,
+                          },
+                          undefined,
+                        ],
+                      ],
+                    ]
+                  }
+                  testID="cameraButton-text"
+                >
+                  Grant
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+      <View
+        style={
+          Object {
+            "alignItems": "center",
+            "justifyContent": "center",
+            "marginBottom": 50,
+            "marginLeft": 20,
+            "marginRight": 20,
+          }
+        }
+      >
+        <Text
+          style={
+            Array [
+              Object {
+                "textAlign": "left",
+              },
+              Object {
+                "color": "rgba(28, 27, 31, 1)",
+                "fontFamily": "System",
+                "fontWeight": "400",
+                "letterSpacing": 0,
+              },
+              Object {
+                "writingDirection": "ltr",
+              },
+              Object {
+                "fontSize": 18,
+                "marginBottom": 10,
+                "textAlign": "center",
+              },
+            ]
+          }
+        >
+          Vision Camera needs microphone permission
+        </Text>
+        <View
+          collapsable={false}
+          style={
+            Object {
+              "backgroundColor": "rgba(103, 80, 164, 1)",
+              "borderRadius": 20,
+              "shadowColor": "#000",
+              "shadowOffset": Object {
+                "height": 0,
+                "width": 0,
+              },
+              "shadowOpacity": 0,
+              "shadowRadius": 0,
+              "width": 100,
+            }
+          }
+          testID="cameraButton-container-outer-layer"
+        >
+          <View
+            collapsable={false}
+            style={
+              Object {
+                "backgroundColor": "rgba(103, 80, 164, 1)",
+                "borderColor": "transparent",
+                "borderRadius": 20,
+                "borderStyle": "solid",
+                "borderWidth": 0,
+                "flex": undefined,
+                "minWidth": 64,
+                "shadowColor": "#000",
+                "shadowOffset": Object {
+                  "height": 0,
+                  "width": 0,
+                },
+                "shadowOpacity": 0,
+                "shadowRadius": 0,
+              }
+            }
+            testID="cameraButton-container"
+          >
+            <View
+              accessibilityRole="button"
+              accessibilityState={
+                Object {
+                  "disabled": false,
+                }
+              }
+              accessible={true}
+              collapsable={false}
+              focusable={true}
+              onBlur={[Function]}
+              onClick={[Function]}
+              onFocus={[Function]}
+              onResponderGrant={[Function]}
+              onResponderMove={[Function]}
+              onResponderRelease={[Function]}
+              onResponderTerminate={[Function]}
+              onResponderTerminationRequest={[Function]}
+              onStartShouldSetResponder={[Function]}
+              style={
+                Array [
+                  Object {
+                    "overflow": "hidden",
+                  },
+                  Object {
+                    "borderRadius": 20,
+                  },
+                ]
+              }
+              testID="cameraButton"
+            >
+              <View
+                style={
+                  Array [
+                    Object {
+                      "alignItems": "center",
+                      "flexDirection": "row",
+                      "justifyContent": "center",
+                    },
+                    undefined,
+                  ]
+                }
+              >
+                <Text
+                  numberOfLines={1}
+                  selectable={false}
+                  style={
+                    Array [
+                      Object {
+                        "textAlign": "left",
+                      },
+                      Object {
+                        "color": "rgba(28, 27, 31, 1)",
+                        "writingDirection": "ltr",
+                      },
+                      Array [
+                        Object {
+                          "fontFamily": "System",
+                          "fontSize": 14,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.1,
+                          "lineHeight": 20,
+                        },
+                        Array [
+                          Object {
+                            "marginHorizontal": 16,
+                            "marginVertical": 9,
+                            "textAlign": "center",
+                          },
+                          false,
+                          Object {
+                            "marginHorizontal": 24,
+                            "marginVertical": 10,
+                          },
+                          undefined,
+                          false,
+                          Object {
+                            "color": "rgba(255, 255, 255, 1)",
+                            "fontFamily": "System",
+                            "fontSize": 14,
+                            "fontWeight": "500",
+                            "letterSpacing": 0.1,
+                            "lineHeight": 20,
+                          },
+                          undefined,
+                        ],
+                      ],
+                    ]
+                  }
+                  testID="cameraButton-text"
+                >
+                  Grant
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</RNCSafeAreaView>
+`;
