@@ -13,9 +13,9 @@ import {
   CameraDevices,
   useCameraDevices,
   CameraRuntimeError,
-  useFrameProcessor,
   FrameProcessorPerformanceSuggestion,
-  Frame,
+  // useFrameProcessor,
+  // Frame,
 } from 'react-native-vision-camera';
 import { useIsFocused } from '@react-navigation/core';
 import * as Colors from 'styles/Colors';
@@ -50,10 +50,11 @@ export function CameraEntry(_props: ICameraEntryProps) {
   const devices: CameraDevices = useCameraDevices();
   const device: CameraDevice | undefined = devices.back;
 
-  const frameProcessor = useFrameProcessor((frame: Frame) => {
-    'worklet';
-    console.log('Width: ' + frame.width + ', Height: ' + frame.height);
-  }, []);
+  // https://github.com/mrousavy/react-native-vision-camera/issues/1395
+  // const frameProcessor = useFrameProcessor((frame: Frame) => {
+  //   'worklet';
+  //   console.log('Width: ' + frame.width + ', Height: ' + frame.height);
+  // }, []);
 
   const onFrameProcessorSuggestionAvailable = React.useCallback(
     (suggestion: FrameProcessorPerformanceSuggestion) => {
@@ -74,7 +75,7 @@ export function CameraEntry(_props: ICameraEntryProps) {
             device={device!}
             isActive={isActive}
             onError={onError}
-            frameProcessor={frameProcessor}
+            // frameProcessor={frameProcessor}
             orientation="portrait"
             onFrameProcessorPerformanceSuggestionAvailable={
               onFrameProcessorSuggestionAvailable
