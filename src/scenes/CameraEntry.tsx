@@ -13,10 +13,10 @@ import {
   CameraDevices,
   useCameraDevices,
   CameraRuntimeError,
-  FrameProcessorPerformanceSuggestion,
-  // useFrameProcessor,
-  // Frame,
+  useFrameProcessor,
+  Frame,
 } from 'react-native-vision-camera';
+import 'react-native-reanimated';
 import { useIsFocused } from '@react-navigation/core';
 import * as Colors from 'styles/Colors';
 import { Option } from 'nasi-lemak';
@@ -50,20 +50,12 @@ export function CameraEntry(_props: ICameraEntryProps) {
   const devices: CameraDevices = useCameraDevices();
   const device: CameraDevice | undefined = devices.back;
 
-  // https://github.com/mrousavy/react-native-vision-camera/issues/1395
-  // const frameProcessor = useFrameProcessor((frame: Frame) => {
-  //   'worklet';
-  //   console.log('Width: ' + frame.width + ', Height: ' + frame.height);
-  // }, []);
-
-  const onFrameProcessorSuggestionAvailable = React.useCallback(
-    (suggestion: FrameProcessorPerformanceSuggestion) => {
-      console.log(
-        `Suggestion available! ${suggestion.type}: Can do ${suggestion.suggestedFrameProcessorFps} FPS`,
-      );
-    },
-    [],
-  );
+  // https://www.react-native-vision-camera.com/docs/guides/frame-processors-plugins-overview
+  // https://github.com/mrousavy/react-native-vision-camera/issues/1195
+  const frameProcessor = useFrameProcessor((frame: Frame) => {
+    'worklet';
+    console.log('Width: ' + frame.width + ', Height: ' + frame.height);
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -72,14 +64,11 @@ export function CameraEntry(_props: ICameraEntryProps) {
         {Option.isSome(device) && (
           <Camera
             style={styles.camera}
-            device={device!}
+            device={device}
             isActive={isActive}
             onError={onError}
-            // frameProcessor={frameProcessor}
+            frameProcessor={frameProcessor}
             orientation="portrait"
-            onFrameProcessorPerformanceSuggestionAvailable={
-              onFrameProcessorSuggestionAvailable
-            }
           />
         )}
       </View>

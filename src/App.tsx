@@ -16,13 +16,19 @@ import { Provider as ApplicationContextProvider } from 'core/ApplicationContext'
 import { Type as SnackbarType } from 'models/SnackbarTypes';
 import {
   RouteDefinition,
-  StackNavigatorHeader,
   StackParamList,
+  StackNavigatorHeader as Header,
 } from 'components/navigators';
 import { MainEntry, CameraEntry } from 'scenes/';
 import { useSnackbar as useSnackbarStyles } from 'styles/';
 
 const Stack = createStackNavigator<StackParamList>();
+
+const CustomStackNavigatorHeader = (
+  props: Header.IStackNavigatorHeaderProps,
+) => {
+  return <Header.StackNavigatorHeader {...props} backButton={false} />;
+};
 
 interface IAppProps {
   appName: string;
@@ -78,12 +84,7 @@ export function App(props: IAppProps) {
               screenOptions={{
                 title: appName,
                 headerShown: false,
-                header: (stackHeaderProps) => (
-                  <StackNavigatorHeader
-                    {...stackHeaderProps}
-                    backButton={false}
-                  />
-                ),
+                header: CustomStackNavigatorHeader,
               }}
             >
               <Stack.Screen name={RouteDefinition.MAIN} component={MainEntry} />

@@ -2,6 +2,7 @@
  * StackNavigatorHeader.tsx
  * @author HU JIAJUN <e0556371@u.nus.edu>
  * @file Custom header component for StackNavigator
+ * @barrel export all
  */
 
 import React from 'react';
