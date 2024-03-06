@@ -9,11 +9,12 @@ import { AppState, AppStateStatus, StatusBar, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Camera,
+  CodeScanner,
   CameraDevice,
-  CameraDevices,
-  useCameraDevices,
+  useCameraDevice,
   CameraRuntimeError,
   useFrameProcessor,
+  useCodeScanner,
   Frame,
 } from 'react-native-vision-camera';
 import 'react-native-reanimated';
@@ -47,8 +48,7 @@ export function CameraEntry(_props: ICameraEntryProps) {
   const isActive: boolean = isFocussed && isForeground;
 
   // Camera Format Settings
-  const devices: CameraDevices = useCameraDevices();
-  const device: CameraDevice | undefined = devices.back;
+  const device: CameraDevice | undefined = useCameraDevice('back');
 
   // https://www.react-native-vision-camera.com/docs/guides/frame-processors-plugins-overview
   // https://github.com/mrousavy/react-native-vision-camera/issues/1195
@@ -56,6 +56,13 @@ export function CameraEntry(_props: ICameraEntryProps) {
     'worklet';
     console.log('Width: ' + frame.width + ', Height: ' + frame.height);
   }, []);
+
+  const codeScanner: CodeScanner = useCodeScanner({
+    codeTypes: ['qr', 'ean-13'],
+    onCodeScanned: (codes) => {
+      console.log(`Scanned ${codes.length} codes!`);
+    },
+  });
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -69,6 +76,7 @@ export function CameraEntry(_props: ICameraEntryProps) {
             onError={onError}
             frameProcessor={frameProcessor}
             orientation="portrait"
+            codeScanner={codeScanner}
           />
         )}
       </View>

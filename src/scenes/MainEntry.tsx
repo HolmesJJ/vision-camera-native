@@ -44,14 +44,14 @@ export function MainEntry(props: IMainEntryProps) {
   }, []);
 
   React.useEffect(() => {
-    Camera.getCameraPermissionStatus().then(setCameraPermissionStatus);
-    Camera.getMicrophonePermissionStatus().then(setMicrophonePermissionStatus);
+    setCameraPermissionStatus(Camera.getCameraPermissionStatus());
+    setMicrophonePermissionStatus(Camera.getMicrophonePermissionStatus());
   }, []);
 
   React.useEffect(() => {
     if (
-      cameraPermissionStatus === 'authorized' &&
-      microphonePermissionStatus === 'authorized'
+      cameraPermissionStatus === 'granted' &&
+      microphonePermissionStatus === 'granted'
     ) {
       setDisabled(false);
     }
@@ -67,7 +67,7 @@ export function MainEntry(props: IMainEntryProps) {
       <View style={styles.container}>
         <Optional predicate={disabled}>
           <View>
-            {cameraPermissionStatus !== 'authorized' && (
+            {cameraPermissionStatus !== 'granted' && (
               <View style={styles.permissionContainer}>
                 <Text style={styles.permissionText}>
                   Vision Camera needs camera permission
@@ -82,7 +82,7 @@ export function MainEntry(props: IMainEntryProps) {
                 </Button>
               </View>
             )}
-            {microphonePermissionStatus !== 'authorized' && (
+            {microphonePermissionStatus !== 'granted' && (
               <View style={styles.permissionContainer}>
                 <Text style={styles.permissionText}>
                   Vision Camera needs microphone permission

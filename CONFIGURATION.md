@@ -41,11 +41,11 @@ javac -version
 yarn -v
 ```
 
-### Delete `node_modules`
-Delete file `<PROJECT_FILE_NAME>/node_modules`
-
 ### Clear Cache
 ```
+rm -rf node_modules
+rm -rf $TMPDIR/react-native-packager-cache-*
+rm -rf $TMPDIR/metro-bundler-cache-* 
 watchman watch-del-all
 yarn cache clean
 ```
@@ -78,6 +78,13 @@ export PATH="$PATH:$(yarn global bin)"
 pod install
 ```
 
+### Check Android Build
+```
+./gradlew clean
+./gradlew assembleDebug
+./gradlew assembleRelease
+```
+
 ### Find Android Emulators
 ```
 adb devices
@@ -90,6 +97,11 @@ ENVFILE=.env.production npm run android
 
 ### Run Specific Android Emulator
 If you want run specific emulator, you need to launch the emulator from Android Studio first before run the command `ENVFILE=.env.production npm run android`.
+
+### Check iOS Build
+```
+xcodebuild -workspace <APP_NAME>.xcworkspace -scheme <APP_NAME> -sdk iphonesimulator -configuration Debug ONLY_ACTIVE_ARCH=NO
+```
 
 ### Find iOS Emulators
 ```
@@ -106,7 +118,7 @@ ENVFILE=.env.production npm run ios
 ENVFILE=.env.production yarn ios --simulator="iPad Pro (9.7-inch)"
 ```
 
-### Enable Fast Refresh 
+### Enable Fast Refresh
 1. ctrl + M on the emulator
 2. select "Enable Fast Refresh"
 
