@@ -10,6 +10,8 @@ import com.facebook.react.bridge.ReactMethod;
 
 final class ActivityStarterModule extends ReactContextBaseJavaModule {
 
+  private static final String TAG = ActivityStarterModule.class.getSimpleName();
+
   ActivityStarterModule(ReactApplicationContext context) {
     super(context);
   }
@@ -22,7 +24,7 @@ final class ActivityStarterModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getTimestamp() {
-    Log.d(getClass().getName(), "getTimestamp(): " + System.currentTimeMillis());
+    Log.i(TAG, "getTimestamp(): " + System.currentTimeMillis());
   }
 
   @ReactMethod
