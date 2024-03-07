@@ -31,11 +31,11 @@ export function useMainEntry() {
       marginBottom: 10,
     },
     permissionButton: {
-      width: 100,
+      width: 150,
     },
     cameraButton: {
       margin: 8,
-      width: 150,
+      width: 200,
     },
   });
 }

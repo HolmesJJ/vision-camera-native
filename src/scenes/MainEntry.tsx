@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { StatusBar, View, Linking } from 'react-native';
+import { NativeModules, StatusBar, View, Linking } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, CameraPermissionStatus } from 'react-native-vision-camera';
@@ -19,6 +19,7 @@ export interface IMainEntryProps
 
 export function MainEntry(props: IMainEntryProps) {
   const navigation = props.navigation;
+  const { ActivityStarter } = NativeModules;
   const styles = useStyles();
 
   const [cameraPermissionStatus, setCameraPermissionStatus] =
@@ -109,7 +110,18 @@ export function MainEntry(props: IMainEntryProps) {
               navigation.navigate(RouteDefinition.CAMERA);
             }}
           >
-            CAMERA
+            VISION CAMERA
+          </Button>
+        </Optional>
+        <Optional predicate={!disabled}>
+          <Button
+            style={styles.cameraButton}
+            testID="cameraButton"
+            mode="contained"
+            disabled={disabled}
+            onPress={() => ActivityStarter.navigateToCamera()}
+          >
+            NATIVE CAMERA
           </Button>
         </Optional>
       </View>

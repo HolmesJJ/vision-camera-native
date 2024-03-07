@@ -38,6 +38,7 @@ module.exports = {
         globals: ['__scanCodes'],
       },
     ],
+    ['react-native-worklets-core/plugin'],
   ],
   presets: ['module:metro-react-native-babel-preset'],
 };

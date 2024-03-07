@@ -5,16 +5,20 @@
  */
 
 import React from 'react';
-import { AppState, AppStateStatus, StatusBar, View } from 'react-native';
+import {
+  AppState,
+  AppStateStatus,
+  Platform,
+  StatusBar,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Camera,
-  CodeScanner,
   CameraDevice,
   useCameraDevice,
   CameraRuntimeError,
   useFrameProcessor,
-  useCodeScanner,
   Frame,
 } from 'react-native-vision-camera';
 import 'react-native-reanimated';
@@ -31,38 +35,64 @@ export interface ICameraEntryProps
 export function CameraEntry(_props: ICameraEntryProps) {
   const styles = useStyles();
 
-  const onError = React.useCallback((error: CameraRuntimeError) => {
-    console.error(error);
-  }, []);
-
-  // Check if camera page is active
-  const [isForeground, setIsForeground] = React.useState<boolean>(true);
+  // Check if foreground is active
+  const [isForeground, setForeground] = React.useState<boolean>(true);
   React.useEffect(() => {
     const onChange = (state: AppStateStatus): void => {
-      setIsForeground(state === 'active');
+      setForeground(state === 'active');
     };
     const listener = AppState.addEventListener('change', onChange);
     return () => listener.remove();
-  }, [setIsForeground]);
-  const isFocussed: boolean = useIsFocused();
-  const isActive: boolean = isFocussed && isForeground;
+  }, [setForeground]);
+
+  // Check if camera is initialized
+  const [isInitialized, setInitialized] = React.useState<boolean>(false);
+  const onError = React.useCallback((error: CameraRuntimeError) => {
+    console.error(error);
+    setInitialized(false);
+  }, []);
+  const onInitialized = React.useCallback(() => {
+    setInitialized(true);
+  }, []);
+
+  // Check if camera is focused
+  const isFocused: boolean = useIsFocused();
+
+  // https://github.com/mrousavy/react-native-vision-camera/issues/2291
+  // Check if camera is ready
+  const [isReady, setReady] = React.useState(Platform.OS === 'ios');
+  React.useEffect(() => {
+    if (Platform.OS === 'ios') {
+      return () => {};
+    }
+    let timeout: any;
+    if (isInitialized) {
+      timeout = setTimeout(() => {
+        setReady(true);
+      }, 500);
+    }
+    setReady(false);
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [isInitialized]);
+
+  const isActive: boolean =
+    isReady && isFocused && isForeground && isInitialized;
+  console.log(isActive);
 
   // Camera Format Settings
   const device: CameraDevice | undefined = useCameraDevice('back');
+  // const format = useCameraFormat(device, Templates.FrameProcessingBarcodeXGA);
 
-  // https://www.react-native-vision-camera.com/docs/guides/frame-processors-plugins-overview
-  // https://github.com/mrousavy/react-native-vision-camera/issues/1195
+  // https://react-native-vision-camera.com/docs/guides/frame-processors
+  // https://github.com/mrousavy/react-native-vision-camera/issues/1913
   const frameProcessor = useFrameProcessor((frame: Frame) => {
     'worklet';
     console.log('Width: ' + frame.width + ', Height: ' + frame.height);
   }, []);
-
-  const codeScanner: CodeScanner = useCodeScanner({
-    codeTypes: ['qr', 'ean-13'],
-    onCodeScanned: (codes) => {
-      console.log(`Scanned ${codes.length} codes!`);
-    },
-  });
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -76,7 +106,7 @@ export function CameraEntry(_props: ICameraEntryProps) {
             onError={onError}
             frameProcessor={frameProcessor}
             orientation="portrait"
-            codeScanner={codeScanner}
+            onInitialized={onInitialized}
           />
         )}
       </View>

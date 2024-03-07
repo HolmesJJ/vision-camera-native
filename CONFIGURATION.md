@@ -44,8 +44,6 @@ yarn -v
 ### Clear Cache
 ```
 rm -rf node_modules
-rm -rf $TMPDIR/react-native-packager-cache-*
-rm -rf $TMPDIR/metro-bundler-cache-* 
 watchman watch-del-all
 yarn cache clean
 ```
@@ -141,5 +139,11 @@ source ~/.bash_profile
 
 #### Could not get the simulator list from Xcode. Please open Xcode and try running project directly from there to resolve the remaining issues
 * Launch Xcode -> Preferences -> Locations -> Update "Command Line Tools" option
+
+#### Task :react-native-vision-camera:buildCMakeRelWithDebInfo[arm64-v8a] FAILED
+* https://github.com/mrousavy/react-native-vision-camera/issues/1913
+
+#### (Pending) system/camera-module-not-found: Failed to initialize VisionCamera: The native Camera Module (`NativeModules.CameraView`) could not be found
+* https://github.com/mrousavy/react-native-vision-camera/issues/2587
 
 #### If there are some unknown errors, redo all steps from "Delete node modules"
