@@ -32,7 +32,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 public final class Camera2Helper {
 
@@ -642,7 +641,6 @@ public final class Camera2Helper {
 
   private class OnImageAvailableListenerImpl implements ImageReader.OnImageAvailableListener {
     private byte[] nv21Bytes;
-    private final ReentrantLock lock = new ReentrantLock();
 
     // https://blog.minhazav.dev/how-to-use-renderscript-to-convert-YUV_420_888-yuv-image-to-bitmap/
     @Override
@@ -679,13 +677,13 @@ public final class Camera2Helper {
         int uvWidth = width / 2;
         int uvHeight = height / 2;
 
-        lock.lock();
         // 重复使用同一个nv21Bytes数组，减少gc频率
         if (nv21Bytes == null) {
           // Full size Y channel and quarter size U+V channels.
           int numPixels = (int) (width * height * 1.5f);
           nv21Bytes = new byte[numPixels];
         }
+
         try {
           for(int y = 0; y < height; ++y) {
             int yOffset = y * yRowStride;
@@ -705,7 +703,6 @@ public final class Camera2Helper {
         } catch (Exception e) {
           e.printStackTrace();
         }
-        lock.unlock();
       }
       image.close();
     }

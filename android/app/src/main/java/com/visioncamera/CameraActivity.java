@@ -40,7 +40,6 @@ import com.visioncamera.utils.ContextUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class CameraActivity extends AppCompatActivity implements Camera2Listener {
 
@@ -64,8 +63,6 @@ public class CameraActivity extends AppCompatActivity implements Camera2Listener
           - ((long) rhs.getWidth() * rhs.getHeight()));
     }
   }
-
-  private final ReentrantLock mLock = new ReentrantLock();
 
   private Camera2Helper mCamera2Helper;
   // 显示的旋转角度
@@ -114,15 +111,23 @@ public class CameraActivity extends AppCompatActivity implements Camera2Listener
 
   @Override
   protected void onStop() {
+    clearCanvas();
     stopCamera();
     super.onStop();
   }
 
   @Override
   protected void onDestroy() {
+    clearCanvas();
     releaseBarcodeScanner();
     releaseCamera();
     super.onDestroy();
+  }
+
+  @Override
+  public void onBackPressed() {
+    super.onBackPressed();
+    finish();
   }
 
   @Override
@@ -142,10 +147,8 @@ public class CameraActivity extends AppCompatActivity implements Camera2Listener
       mPreviewH = previewSize.getHeight();
     }
     if (!mIsCameraTrackReady) {
-      mLock.lock();
       System.arraycopy(nv21Bytes, 0, mCameraTrackNv21, 0, nv21Bytes.length);
       mIsCameraTrackReady = true;
-      mLock.unlock();
       Log.i(TAG, "mIsCameraTrackReady: " + mIsCameraTrackReady);
       startTrack();
     }
@@ -254,17 +257,19 @@ public class CameraActivity extends AppCompatActivity implements Camera2Listener
         );
         // testBitmap();
         if (mBarcodeScanner == null) {
-          mLock.lock();
+          runOnUiThread(() -> {
+            mTvCode.setText("Scanning...");
+          });
           mIsCameraTrackReady = false;
-          mLock.unlock();
           return;
         }
         mBarcodeScanner.process(image).addOnSuccessListener(barcodes -> {
           if (barcodes.size() == 0) {
             clearCanvas();
-            mLock.lock();
+            runOnUiThread(() -> {
+              mTvCode.setText("Scanning...");
+            });
             mIsCameraTrackReady = false;
-            mLock.unlock();
             return;
           }
           mBarcodes.addAll(barcodes);
@@ -273,14 +278,13 @@ public class CameraActivity extends AppCompatActivity implements Camera2Listener
             mTvCode.setText(mBarcodes.get(0).getDisplayValue());
           });
           mBarcodes.clear();
-          mLock.lock();
           mIsCameraTrackReady = false;
-          mLock.unlock();
         }).addOnFailureListener(e -> {
           Log.i(TAG, "Barcode tracking error: " + e.fillInStackTrace());
-          mLock.lock();
+          runOnUiThread(() -> {
+            mTvCode.setText("Scanning...");
+          });
           mIsCameraTrackReady = false;
-          mLock.unlock();
         });
       }
     });
@@ -293,7 +297,6 @@ public class CameraActivity extends AppCompatActivity implements Camera2Listener
         return;
       }
       canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-      // Only take face 0
       Barcode barcode = barcodes.get(0);
       canvas.save();
       canvas.setMatrix(mTvCamera.getMatrix());
@@ -312,17 +315,23 @@ public class CameraActivity extends AppCompatActivity implements Camera2Listener
       Log.i(TAG, "scaledX: " + (canvas.getHeight() * 1.0f / mPreviewW));
       Log.i(TAG, "scaledY: " + (canvas.getWidth() * 1.0f / mPreviewH));
 
-      int extraWidth = 20;
-      int extraBottom = 50;
-      canvas.drawRect(
-          canvas.getWidth() - scaledCenterX - scaledWidth / 2 + extraWidth,
-          scaledCenterY  - scaledHeight / 2,
-          canvas.getWidth() - scaledCenterX + scaledWidth / 2 - extraWidth,
-          scaledCenterY  + scaledHeight / 2 - extraBottom,
-          mPaint);
-      canvas.drawText("Detecting...",
-          canvas.getWidth() - scaledCenterX - scaledWidth / 2 + extraWidth,
-          scaledCenterY  - scaledHeight / 2 - 30, mPaint);
+      int extraWidth = 0; // For small adjustment
+      int extraBottom = 0; // For small adjustment
+      if (Camera2Helper.getCameraIdFront().equals(mOpenedCameraId)) {
+        canvas.drawRect(
+            canvas.getWidth() - scaledCenterX - scaledWidth / 2 + extraWidth,
+            scaledCenterY  - scaledHeight / 2,
+            canvas.getWidth() - scaledCenterX + scaledWidth / 2 - extraWidth,
+            scaledCenterY  + scaledHeight / 2 - extraBottom,
+            mPaint);
+      } else {
+        canvas.drawRect(
+            scaledCenterX - scaledWidth / 2 - extraWidth,
+            scaledCenterY  - scaledHeight / 2,
+            scaledCenterX + scaledWidth / 2 + extraWidth,
+            scaledCenterY  + scaledHeight / 2 - extraBottom,
+            mPaint);
+      }
       canvas.restore();
       mSfvOverlap.getHolder().unlockCanvasAndPost(canvas);
     } else {
@@ -337,7 +346,7 @@ public class CameraActivity extends AppCompatActivity implements Camera2Listener
         // 对于前置数据，镜像处理；若手动设置镜像预览，则镜像处理；若都有，则不需要镜像处理
         Camera2Helper.getCameraIdFront().equals(mOpenedCameraId) ^ mIsMirrorPreview
             ? 360 - mDisplayOrientation : mDisplayOrientation,
-        true,
+        Camera2Helper.getCameraIdFront().equals(mOpenedCameraId),
         false);
     runOnUiThread(() -> {
       mIvTest.setImageBitmap(rotatedBtm);
