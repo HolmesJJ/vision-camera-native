@@ -146,4 +146,7 @@ source ~/.bash_profile
 #### (Pending) system/camera-module-not-found: Failed to initialize VisionCamera: The native Camera Module (`NativeModules.CameraView`) could not be found
 * https://github.com/mrousavy/react-native-vision-camera/issues/2587
 
+#### Vision Camera Troubleshooting
+* https://react-native-vision-camera.com/docs/guides/troubleshooting
+
 #### If there are some unknown errors, redo all steps from "Delete node modules"

@@ -21,6 +21,7 @@ const config = {
   },
   resolver: {
     extraNodeModules: nodeLibs,
+    assetExts: ['tflite', 'png', 'jpg'],
   },
 };
 
