@@ -16,6 +16,7 @@
     "@react-native-masked-view/masked-view": "^0.2.9",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
+    "@shopify/react-native-skia": "^1.1.0",
     "lodash": "^4.17.21",
     "nasi-lemak": "^1.2.0-pre.15",
     "node-libs-react-native": "^1.2.1",

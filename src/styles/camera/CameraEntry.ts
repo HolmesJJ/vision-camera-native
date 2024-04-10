@@ -22,6 +22,15 @@ export function useCameraEntry() {
     camera: {
       height: '100%',
       width: '100%',
+      position: 'absolute',
+      zIndex: 1,
+    },
+    canvas: {
+      position: 'absolute',
+      left: 0,
+      width: '100%',
+      height: '100%',
+      zIndex: 2,
     },
   });
 }

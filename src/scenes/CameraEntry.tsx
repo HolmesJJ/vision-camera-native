@@ -21,19 +21,56 @@ import {
   useFrameProcessor,
   Frame,
 } from 'react-native-vision-camera';
+import { Worklets } from 'react-native-worklets-core';
+import { useTensorflowModel } from 'react-native-fast-tflite';
+import { useResizePlugin } from 'vision-camera-resize-plugin';
 import 'react-native-reanimated';
 import { useIsFocused } from '@react-navigation/core';
+import {
+  Canvas,
+  matchFont,
+  PaintStyle,
+  Rect,
+  Skia,
+  Text,
+} from '@shopify/react-native-skia';
 import * as Colors from 'styles/Colors';
 import { Option } from 'nasi-lemak';
 
 import { RouteDefinition, StackScreenProps } from 'components/navigators';
 import { useCameraEntry as useStyles } from 'styles/camera';
 
+interface Detection {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  label: string;
+  confidence: number;
+}
+
 export interface ICameraEntryProps
   extends StackScreenProps<RouteDefinition.CAMERA> {}
 
 export function CameraEntry(_props: ICameraEntryProps) {
   const styles = useStyles();
+  const { resize } = useResizePlugin();
+
+  const objectDetection = useTensorflowModel(
+    require('assets/object_detection.tflite'),
+  );
+  const model =
+    objectDetection.state === 'loaded' ? objectDetection.model : undefined;
+
+  const paint = Skia.Paint();
+  paint.setStyle(PaintStyle.Stroke);
+  paint.setStrokeWidth(1);
+  paint.setColor(Skia.Color('red'));
+
+  const fontStyle = {
+    fontSize: 14,
+  };
+  const font = matchFont(fontStyle);
 
   // Check if foreground is active
   const [isForeground, setForeground] = React.useState<boolean>(true);
@@ -81,18 +118,70 @@ export function CameraEntry(_props: ICameraEntryProps) {
 
   const isActive: boolean =
     isReady && isFocused && isForeground && isInitialized;
-  console.log(isActive);
 
   // Camera Format Settings
   const device: CameraDevice | undefined = useCameraDevice('back');
   // const format = useCameraFormat(device, Templates.FrameProcessingBarcodeXGA);
 
+  const [detections, setDetections] = React.useState<Detection[]>([]);
+  // https://github.com/mrousavy/react-native-vision-camera/issues/1613
+  const setDetectionsOnJS = Worklets.createRunInJsFn(setDetections);
+
+  const [canvasLayout, setCanvasLayout] = React.useState<number[]>([]);
+
   // https://react-native-vision-camera.com/docs/guides/frame-processors
   // https://github.com/mrousavy/react-native-vision-camera/issues/1913
-  const frameProcessor = useFrameProcessor((frame: Frame) => {
-    'worklet';
-    console.log('Width: ' + frame.width + ', Height: ' + frame.height);
-  }, []);
+  const frameProcessor = useFrameProcessor(
+    (frame: Frame) => {
+      'worklet';
+
+      // console.log('Width: ' + frame.width + ', Height: ' + frame.height);
+      if (model === undefined) {
+        return;
+      }
+
+      // 1. Resize 4k Frame to 192x192x3 using vision-camera-resize-plugin
+      const resized = resize(frame, {
+        scale: {
+          width: 192,
+          height: 192,
+        },
+        pixelFormat: 'rgb',
+        dataType: 'uint8',
+        rotation: '0deg',
+      });
+
+      // 2. Run model with given input buffer synchronously
+      const outputs = model.runSync([resized]);
+
+      // 3. Interpret outputs accordingly
+      const detectedObjects = [];
+      const detection_boxes = outputs[0];
+      const detection_classes = outputs[1];
+      const detection_scores = outputs[2];
+      const num_detections = outputs[3];
+      console.log(`Detected ${num_detections[0]} objects!`);
+
+      for (let i = 0; i < detection_boxes.length; i += 4) {
+        const confidence = detection_scores[i / 4];
+        if (confidence > 0.5) {
+          // 4. Draw a red box around the detected object!
+          const [canvasWidth, canvasHeight] = canvasLayout;
+          const object = {
+            left: detection_boxes[i] * canvasWidth,
+            top: detection_boxes[i + 1] * canvasHeight,
+            right: detection_boxes[i + 2] * canvasWidth,
+            bottom: detection_boxes[i + 3] * canvasHeight,
+            label: '' + detection_classes[i / 4],
+            confidence: confidence,
+          } as Detection;
+          detectedObjects.push(object);
+        }
+      }
+      setDetectionsOnJS(detectedObjects);
+    },
+    [model, canvasLayout],
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -109,6 +198,32 @@ export function CameraEntry(_props: ICameraEntryProps) {
             onInitialized={onInitialized}
           />
         )}
+        <Canvas
+          style={styles.canvas}
+          onLayout={(event) => {
+            const { width, height } = event.nativeEvent.layout;
+            setCanvasLayout([width, height]);
+          }}
+        >
+          {detections.map((detection, index) => (
+            <React.Fragment key={index}>
+              <Rect
+                x={detection.left}
+                y={detection.top}
+                width={detection.right - detection.left}
+                height={detection.bottom - detection.top}
+                paint={paint}
+              />
+              <Text
+                x={detection.left}
+                y={detection.top - 10}
+                text={detection.label}
+                paint={paint}
+                font={font}
+              />
+            </React.Fragment>
+          ))}
+        </Canvas>
       </View>
     </SafeAreaView>
   );
