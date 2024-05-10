@@ -37,5 +37,9 @@ export function useMainEntry() {
       margin: 8,
       width: 200,
     },
+    testButton: {
+      margin: 8,
+      width: 200,
+    },
   });
 }

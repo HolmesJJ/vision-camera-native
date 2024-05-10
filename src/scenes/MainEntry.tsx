@@ -103,7 +103,7 @@ export function MainEntry(props: IMainEntryProps) {
         <Optional predicate={!disabled}>
           <Button
             style={styles.cameraButton}
-            testID="cameraButton"
+            testID="visionCameraButton"
             mode="contained"
             disabled={disabled}
             onPress={() => {
@@ -116,12 +116,25 @@ export function MainEntry(props: IMainEntryProps) {
         <Optional predicate={!disabled}>
           <Button
             style={styles.cameraButton}
-            testID="cameraButton"
+            testID="nativeCameraButton"
             mode="contained"
             disabled={disabled}
             onPress={() => ActivityStarter.navigateToCamera()}
           >
             NATIVE CAMERA
+          </Button>
+        </Optional>
+        <Optional predicate={!disabled}>
+          <Button
+            style={styles.testButton}
+            testID="testButton"
+            mode="contained"
+            disabled={disabled}
+            onPress={() => {
+              navigation.navigate(RouteDefinition.TEST);
+            }}
+          >
+            TEST MODEL
           </Button>
         </Optional>
       </View>

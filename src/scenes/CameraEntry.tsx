@@ -22,7 +22,11 @@ import {
   Frame,
 } from 'react-native-vision-camera';
 import { Worklets } from 'react-native-worklets-core';
-import { useTensorflowModel } from 'react-native-fast-tflite';
+import {
+  Tensor,
+  TensorflowModel,
+  useTensorflowModel,
+} from 'react-native-fast-tflite';
 import { useResizePlugin } from 'vision-camera-resize-plugin';
 import 'react-native-reanimated';
 import { useIsFocused } from '@react-navigation/core';
@@ -52,15 +56,34 @@ interface Detection {
 export interface ICameraEntryProps
   extends StackScreenProps<RouteDefinition.CAMERA> {}
 
+function tensorToString(tensor: Tensor): string {
+  return `\n  - ${tensor.dataType} ${tensor.name}[${tensor.shape}]`;
+}
+
+function modelToString(model: TensorflowModel): string {
+  return (
+    `TFLite Model (${model.delegate}):\n` +
+    `- Inputs: ${model.inputs.map(tensorToString).join('')}\n` +
+    `- Outputs: ${model.outputs.map(tensorToString).join('')}`
+  );
+}
+
 export function CameraEntry(_props: ICameraEntryProps) {
   const styles = useStyles();
   const { resize } = useResizePlugin();
 
   const objectDetection = useTensorflowModel(
-    require('assets/object_detection.tflite'),
+    require('assets/efficientdet.tflite'),
   );
   const model =
     objectDetection.state === 'loaded' ? objectDetection.model : undefined;
+
+  React.useEffect(() => {
+    if (model === undefined) {
+      return;
+    }
+    console.log(`Model loaded! Shape:\n${modelToString(model)}]`);
+  }, [model]);
 
   const paint = Skia.Paint();
   paint.setStyle(PaintStyle.Stroke);
@@ -143,8 +166,8 @@ export function CameraEntry(_props: ICameraEntryProps) {
       // 1. Resize 4k Frame to 192x192x3 using vision-camera-resize-plugin
       const resized = resize(frame, {
         scale: {
-          width: 192,
-          height: 192,
+          width: 320,
+          height: 320,
         },
         pixelFormat: 'rgb',
         dataType: 'uint8',
@@ -159,12 +182,12 @@ export function CameraEntry(_props: ICameraEntryProps) {
       const detection_boxes = outputs[0];
       const detection_classes = outputs[1];
       const detection_scores = outputs[2];
-      const num_detections = outputs[3];
-      console.log(`Detected ${num_detections[0]} objects!`);
+      const num_detections = outputs[3]?.[0] ?? 0;
+      console.log(`Detected ${num_detections} objects!`);
 
       for (let i = 0; i < detection_boxes.length; i += 4) {
         const confidence = detection_scores[i / 4];
-        if (confidence > 0.5) {
+        if (confidence > 0.1) {
           // 4. Draw a red box around the detected object!
           const [canvasWidth, canvasHeight] = canvasLayout;
           const object = {
@@ -205,24 +228,29 @@ export function CameraEntry(_props: ICameraEntryProps) {
             setCanvasLayout([width, height]);
           }}
         >
-          {detections.map((detection, index) => (
-            <React.Fragment key={index}>
-              <Rect
-                x={detection.left}
-                y={detection.top}
-                width={detection.right - detection.left}
-                height={detection.bottom - detection.top}
-                paint={paint}
-              />
-              <Text
-                x={detection.left}
-                y={detection.top - 10}
-                text={detection.label}
-                paint={paint}
-                font={font}
-              />
-            </React.Fragment>
-          ))}
+          {Object.entries(detections).map(([key, detection], index) => {
+            console.log('Index:', index);
+            console.log('Key:', key);
+            console.log('Detection:', detection);
+            return (
+              <React.Fragment key={index}>
+                <Rect
+                  x={detection.left}
+                  y={detection.top}
+                  width={detection.right - detection.left}
+                  height={detection.bottom - detection.top}
+                  paint={paint}
+                />
+                <Text
+                  x={detection.left}
+                  y={detection.top - 10}
+                  text={detection.label}
+                  paint={paint}
+                  font={font}
+                />
+              </React.Fragment>
+            );
+          })}
         </Canvas>
       </View>
     </SafeAreaView>

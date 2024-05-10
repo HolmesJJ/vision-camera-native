@@ -9,4 +9,5 @@ import { RouteDefinition } from 'components/navigators/RouteDefinition';
 export type StackParamList = {
   [RouteDefinition.MAIN]: undefined;
   [RouteDefinition.CAMERA]: undefined;
+  [RouteDefinition.TEST]: undefined;
 };
