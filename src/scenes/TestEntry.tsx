@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import RNFetchBlob from 'rn-fetch-blob';
 import { Image, StatusBar, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,7 +14,6 @@ import {
   TensorflowModel,
   useTensorflowModel,
 } from 'react-native-fast-tflite';
-import { readFile } from 'react-native-fs';
 import 'react-native-reanimated';
 import * as Colors from 'styles/Colors';
 
@@ -38,17 +38,44 @@ function modelToString(model: TensorflowModel): string {
 export function TestEntry(_props: ITestEntryProps) {
   const styles = useStyles();
 
+  const [image, setImage] = React.useState<string | null>(null);
+
   // https://github.com/mrousavy/react-native-fast-tflite/issues/11
   React.useEffect(() => {
-    const processImage = async () => {
-      console.log('aaa');
-      const imagePath = 'assets/images/cat.jpg';
-      const imageBase64 = await readFile(imagePath, 'base64').catch((err) =>
-        console.error('Failed to read file:', err),
-      );
-      console.log(imageBase64);
+    let imagePath: string | null = null;
+    RNFetchBlob.config({
+      fileCache: true,
+    })
+      .fetch(
+        'GET',
+        'https://cdn.pixabay.com/photo/2024/02/28/07/42/european-shorthair-8601492_1280.jpg',
+      )
+      .then((resp) => {
+        imagePath = resp.path();
+        return resp.readFile('base64');
+      })
+      .then((base64Data) => {
+        setImage(base64Data);
+        if (imagePath) {
+          return RNFetchBlob.fs.unlink(imagePath);
+        }
+        return null;
+      })
+      .catch((error) => {
+        console.error('Failed to fetch or convert image:', error);
+        if (imagePath) {
+          RNFetchBlob.fs
+            .unlink(imagePath)
+            .catch((err) => console.error('Failed to remove file:', err));
+        }
+      });
+    return () => {
+      if (imagePath) {
+        RNFetchBlob.fs
+          .unlink(imagePath)
+          .catch((err) => console.error('Cleanup failed:', err));
+      }
     };
-    processImage();
   }, []);
 
   const objectDetection = useTensorflowModel(
@@ -64,16 +91,31 @@ export function TestEntry(_props: ITestEntryProps) {
     console.log(`Model loaded! Shape:\n${modelToString(model)}]`);
   }, [model]);
 
+  async function handleDetection() {
+    if (!image || !model) {
+      console.warn('Image or model is not loaded yet.');
+      return;
+    }
+    // TODO
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar backgroundColor={Colors.black} barStyle="light-content" />
       <View style={styles.container}>
-        <Image source={require('assets/images/cat.jpg')} style={styles.image} />
+        {image ? (
+          <Image
+            source={{ uri: `data:image/png;base64,${image}` }}
+            style={styles.image}
+          />
+        ) : (
+          <Text>Loading...</Text>
+        )}
         <Button
           style={styles.detectButton}
           testID="detectButton"
           mode="contained"
-          onPress={() => {}}
+          onPress={handleDetection}
         >
           Detect
         </Button>

@@ -16,18 +16,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Camera,
   CameraDevice,
+  Code,
+  CodeScannerFrame,
   useCameraDevice,
+  useCodeScanner,
   CameraRuntimeError,
-  useFrameProcessor,
-  Frame,
 } from 'react-native-vision-camera';
-import { Worklets } from 'react-native-worklets-core';
-import {
-  Tensor,
-  TensorflowModel,
-  useTensorflowModel,
-} from 'react-native-fast-tflite';
-import { useResizePlugin } from 'vision-camera-resize-plugin';
 import 'react-native-reanimated';
 import { useIsFocused } from '@react-navigation/core';
 import {
@@ -45,55 +39,37 @@ import { RouteDefinition, StackScreenProps } from 'components/navigators';
 import { useCameraEntry as useStyles } from 'styles/camera';
 
 interface Detection {
-  left: number;
-  top: number;
-  right: number;
-  bottom: number;
-  label: string;
-  confidence: number;
+  x: number; // left
+  y: number; // top
+  width: number; // right = x + width
+  height: number; // bottom = y + height
+  type: string;
+  value: string;
 }
 
 export interface ICameraEntryProps
   extends StackScreenProps<RouteDefinition.CAMERA> {}
 
-function tensorToString(tensor: Tensor): string {
-  return `\n  - ${tensor.dataType} ${tensor.name}[${tensor.shape}]`;
-}
-
-function modelToString(model: TensorflowModel): string {
-  return (
-    `TFLite Model (${model.delegate}):\n` +
-    `- Inputs: ${model.inputs.map(tensorToString).join('')}\n` +
-    `- Outputs: ${model.outputs.map(tensorToString).join('')}`
-  );
-}
-
 export function CameraEntry(_props: ICameraEntryProps) {
   const styles = useStyles();
-  const { resize } = useResizePlugin();
 
-  const objectDetection = useTensorflowModel(
-    require('assets/efficientdet.tflite'),
-  );
-  const model =
-    objectDetection.state === 'loaded' ? objectDetection.model : undefined;
+  const rectPaint = Skia.Paint();
+  rectPaint.setStyle(PaintStyle.Stroke);
+  rectPaint.setStrokeWidth(1);
+  rectPaint.setColor(Skia.Color('red'));
 
-  React.useEffect(() => {
-    if (model === undefined) {
-      return;
-    }
-    console.log(`Model loaded! Shape:\n${modelToString(model)}]`);
-  }, [model]);
-
-  const paint = Skia.Paint();
-  paint.setStyle(PaintStyle.Stroke);
-  paint.setStrokeWidth(1);
-  paint.setColor(Skia.Color('red'));
+  const textPaint = Skia.Paint();
+  textPaint.setStyle(PaintStyle.Fill);
+  textPaint.setColor(Skia.Color('red'));
 
   const fontStyle = {
-    fontSize: 14,
+    fontFamily: 'Arial',
+    fontSize: 16,
   };
   const font = matchFont(fontStyle);
+  if (!font) {
+    console.error('Font not found');
+  }
 
   // Check if foreground is active
   const [isForeground, setForeground] = React.useState<boolean>(true);
@@ -144,67 +120,50 @@ export function CameraEntry(_props: ICameraEntryProps) {
 
   // Camera Format Settings
   const device: CameraDevice | undefined = useCameraDevice('back');
-  // const format = useCameraFormat(device, Templates.FrameProcessingBarcodeXGA);
 
   const [detections, setDetections] = React.useState<Detection[]>([]);
   // https://github.com/mrousavy/react-native-vision-camera/issues/1613
-  const setDetectionsOnJS = Worklets.createRunInJsFn(setDetections);
+  // const setDetectionsOnJS = Worklets.createRunInJsFn(setDetections);
 
   const [canvasLayout, setCanvasLayout] = React.useState<number[]>([]);
 
-  // https://react-native-vision-camera.com/docs/guides/frame-processors
-  // https://github.com/mrousavy/react-native-vision-camera/issues/1913
-  const frameProcessor = useFrameProcessor(
-    (frame: Frame) => {
-      'worklet';
-
-      // console.log('Width: ' + frame.width + ', Height: ' + frame.height);
-      if (model === undefined) {
-        return;
-      }
-
-      // 1. Resize 4k Frame to 192x192x3 using vision-camera-resize-plugin
-      const resized = resize(frame, {
-        scale: {
-          width: 320,
-          height: 320,
-        },
-        pixelFormat: 'rgb',
-        dataType: 'uint8',
-        rotation: '0deg',
-      });
-
-      // 2. Run model with given input buffer synchronously
-      const outputs = model.runSync([resized]);
-
-      // 3. Interpret outputs accordingly
-      const detectedObjects = [];
-      const detection_boxes = outputs[0];
-      const detection_classes = outputs[1];
-      const detection_scores = outputs[2];
-      const num_detections = outputs[3]?.[0] ?? 0;
-      console.log(`Detected ${num_detections} objects!`);
-
-      for (let i = 0; i < detection_boxes.length; i += 4) {
-        const confidence = detection_scores[i / 4];
-        if (confidence > 0.1) {
-          // 4. Draw a red box around the detected object!
-          const [canvasWidth, canvasHeight] = canvasLayout;
-          const object = {
-            left: detection_boxes[i] * canvasWidth,
-            top: detection_boxes[i + 1] * canvasHeight,
-            right: detection_boxes[i + 2] * canvasWidth,
-            bottom: detection_boxes[i + 3] * canvasHeight,
-            label: '' + detection_classes[i / 4],
-            confidence: confidence,
-          } as Detection;
-          detectedObjects.push(object);
-        }
-      }
-      setDetectionsOnJS(detectedObjects);
-    },
-    [model, canvasLayout],
-  );
+  // https://github.com/mrousavy/react-native-vision-camera/issues/2436
+  const codeScanner = useCodeScanner({
+    codeTypes: [
+      'code-128',
+      'code-39',
+      'code-93',
+      'codabar',
+      'ean-13',
+      'ean-8',
+      'itf',
+      'upc-e',
+      'upc-a',
+    ],
+    onCodeScanned: React.useCallback(
+      async (codes: Code[], frame: CodeScannerFrame) => {
+        const [canvasWidth, canvasHeight] = canvasLayout;
+        const newDetections: Detection[] = codes.map((code) => {
+          const scaleWidth = canvasWidth / frame.height;
+          const scaleHeight = canvasHeight / frame.width;
+          return {
+            x:
+              (frame.height -
+                (code.frame?.y ?? 0) -
+                (code.frame?.height ?? 0)) *
+              scaleWidth,
+            y: (code.frame?.x ?? 0) * scaleHeight,
+            width: (code.frame?.height ?? 0) * scaleWidth,
+            height: (code.frame?.width ?? 0) * scaleHeight,
+            type: code.type,
+            value: code.value ?? 'Unknown',
+          };
+        });
+        setDetections(newDetections);
+      },
+      [canvasLayout],
+    ),
+  });
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -216,9 +175,9 @@ export function CameraEntry(_props: ICameraEntryProps) {
             device={device}
             isActive={isActive}
             onError={onError}
-            frameProcessor={frameProcessor}
             orientation="portrait"
             onInitialized={onInitialized}
+            codeScanner={codeScanner}
           />
         )}
         <Canvas
@@ -235,17 +194,17 @@ export function CameraEntry(_props: ICameraEntryProps) {
             return (
               <React.Fragment key={index}>
                 <Rect
-                  x={detection.left}
-                  y={detection.top}
-                  width={detection.right - detection.left}
-                  height={detection.bottom - detection.top}
-                  paint={paint}
+                  x={detection.x}
+                  y={detection.y}
+                  width={detection.width}
+                  height={detection.height}
+                  paint={rectPaint}
                 />
                 <Text
-                  x={detection.left}
-                  y={detection.top - 10}
-                  text={detection.label}
-                  paint={paint}
+                  x={detection.x}
+                  y={detection.y - 10}
+                  text={detection.type + ': ' + detection.value}
+                  paint={textPaint}
                   font={font}
                 />
               </React.Fragment>
