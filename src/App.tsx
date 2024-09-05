@@ -19,7 +19,7 @@ import {
   StackParamList,
   StackNavigatorHeader as Header,
 } from 'components/navigators';
-import { MainEntry, CameraEntry, TestEntry } from 'scenes/';
+import { MainEntry, CameraEntry, FoodEntry, TestEntry } from 'scenes/';
 import { useSnackbar as useSnackbarStyles } from 'styles/';
 
 const Stack = createStackNavigator<StackParamList>();
@@ -92,6 +92,7 @@ export function App(props: IAppProps) {
                 name={RouteDefinition.CAMERA}
                 component={CameraEntry}
               />
+              <Stack.Screen name={RouteDefinition.FOOD} component={FoodEntry} />
               <Stack.Screen name={RouteDefinition.TEST} component={TestEntry} />
             </Stack.Navigator>
           </NavigationContainer>

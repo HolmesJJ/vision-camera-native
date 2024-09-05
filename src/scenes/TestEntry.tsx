@@ -117,7 +117,7 @@ export function TestEntry(_props: ITestEntryProps) {
           mode="contained"
           onPress={handleDetection}
         >
-          Detect
+          DETECT
         </Button>
         <Text style={styles.outputsText}>Results</Text>
       </View>

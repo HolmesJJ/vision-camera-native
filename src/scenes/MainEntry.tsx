@@ -131,6 +131,19 @@ export function MainEntry(props: IMainEntryProps) {
             mode="contained"
             disabled={disabled}
             onPress={() => {
+              navigation.navigate(RouteDefinition.FOOD);
+            }}
+          >
+            OPEN FOOD FACTS
+          </Button>
+        </Optional>
+        <Optional predicate={!disabled}>
+          <Button
+            style={styles.testButton}
+            testID="testButton"
+            mode="contained"
+            disabled={disabled}
+            onPress={() => {
               navigation.navigate(RouteDefinition.TEST);
             }}
           >

@@ -7,5 +7,6 @@
 export enum RouteDefinition {
   MAIN = 'Main',
   CAMERA = 'Camera',
+  FOOD = 'Food',
   TEST = 'Test',
 }
